@@ -74,41 +74,4 @@ std::string ToString(const T& value)
     return  result.str();
 }
 
-template <unsigned long int I, typename... T>
-concept InTupleBounds = requires(std::tuple<T...> tuple) {
-    { (std::tuple_size_v<std::tuple<T...>>) > I };
-};
-
-template <unsigned long int Index, typename... T>
-requires (InTupleBounds<Index, T...>)
-std::string ToString(const std::tuple<T...>& asd)
-{
-    return ")";
-}
-
-template <unsigned long int Index = 0, typename... T>
-std::string ToString(const std::tuple<T...>& value)
-{
-    if constexpr(!InTupleBounds<Index, T...>) {
-        return ")";
-    }
-    
-    std::stringstream result;
-    if constexpr(Index == 0)
-    {
-        result << "(";
-    }
-
-    result << ToString(std::get<Index>(value));
-
-    if constexpr(InTupleBounds<Index + 1, T...>)
-    {
-        result << ", ";
-    }
-
-    return result.str();
-}
-
-
-
 } // namespace vtc
