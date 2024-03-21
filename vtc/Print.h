@@ -11,16 +11,6 @@ namespace vtc {
         }
     }
     
-    template <bool Newline = true, ConvertibleToString T, ConvertibleToString ...TPack>
-    void Print(T value, TPack... pack) 
-    {
-        std::cerr << ToString(value);
-        Print<false, TPack...>(pack...);
-        if constexpr (Newline) {
-            std::cerr << "\n";
-        }
-    }
-
     template <bool Newline = true, ConvertibleToString T>
     void Print(T value) 
     {
@@ -29,5 +19,16 @@ namespace vtc {
             std::cerr << "\n";
         }
     }
+    
+    template <bool Newline = true, ConvertibleToString T, ConvertibleToString ...TPack>
+    void Print(T value, TPack... pack) 
+    {
+        Print<false, T>(value);
+        Print<false, TPack...>(pack...);
+        if constexpr (Newline) {
+            std::cerr << "\n";
+        }
+    }
+
 
 }
