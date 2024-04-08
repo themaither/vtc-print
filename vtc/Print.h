@@ -25,6 +25,15 @@ namespace vtc {
             std::cerr << "\n";
         }
     }
+
+    template <bool Newline = true, typename T>
+    requires false
+        || std::input_iterator<T>
+        || std::is_pointer_v<T>
+    void Print(const T& left, const T& right)
+    {
+        Print(vtc::ToString(left, right));
+    }
     
     template <bool Newline = true, ConvertibleToString T, ConvertibleToString ...TPack>
     void Print(const T& value, const TPack&... pack) 
