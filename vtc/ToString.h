@@ -1,34 +1,30 @@
-#pragma once
-
-#include <format>
+#include <concepts>
+#include <cstdint>
 #include <string>
-#include <utility>
+#include <type_traits>
 
+template <typename T>
+struct Test {
+    typedef T* pointer; 
+};
 
-#include "parts/ToString_Concepts.h"
-    
 namespace vtc {
 
-template<typename T>
-requires IOConvertible<T>
-std::string ToString(const T& value)
-{
-    std::stringstream strs;
-    strs << value;
-    return strs.str();
+    namespace _util {
+
+        template <typename T>
+        concept _StdConvertibleToString = requires(T value)
+        {
+            { std::to_string(value) } -> std::same_as<std::string>;
+        };
+
+    };
+
+    template <typename T>
+    std::string ToString(const T& value) 
+    {
+        if constexpr (std::constructible_from<std::string, T>) return value;
+        if constexpr (_util::_StdConvertibleToString<T>) return std::to_string(value);
+    }
+
 }
-
-// template<typename T>
-// std::string ToString(const T& value) {
-//     return std::string(std::format("<{}>", typeid(T).name()));
-// }
-
-template <typename T, typename U>
-std::string ToString(const std::pair<T, U>& pair) 
-{
-    return std::format("({}, {})", vtc::ToString(pair.first), vtc::ToString(pair.second));
-}
-
-} // namespace vtc
-
-#include "parts/ToString_Containers.h"

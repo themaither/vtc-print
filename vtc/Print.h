@@ -4,6 +4,11 @@
 
 namespace vtc {
 
+    template<typename T>
+    concept ConvertibleToString = requires(T value) {
+        vtc::ToString(value);
+    };
+
     template <bool Newline = true>
     void Print() 
     {
