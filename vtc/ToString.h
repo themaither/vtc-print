@@ -3,11 +3,6 @@
 #include <type_traits>
 #include <vector>
 
-template <typename T>
-struct Test {
-    typedef T* pointer; 
-};
-
 namespace vtc {
 
     namespace _util {
@@ -16,6 +11,20 @@ namespace vtc {
         concept _StdConvertibleToString = requires(T value)
         {
             { std::to_string(value) } -> std::same_as<std::string>;
+        };
+
+        template <typename T>
+        concept _Iterable = requires(T value)
+        {
+            { value.begin() } -> std::input_iterator;
+            { value.end() } -> std::input_iterator;
+        };
+
+        template <typename T>
+        concept _CIterable = requires(T value)
+        {
+            { value.cbegin() } -> std::input_iterator;
+            { value.cend() } -> std::input_iterator;
         };
 
     };
@@ -50,10 +59,27 @@ namespace vtc {
     template <typename T>
     std::string ToString(const T& value) 
     {
+        // String-like types
         if constexpr (std::constructible_from<std::string, T>) 
             return value;
-        if constexpr (_util::_StdConvertibleToString<T>) 
+
+        // Numbers
+        else if constexpr (_util::_StdConvertibleToString<T>) 
             return std::to_string(value);
+
+        // Containers
+        else if constexpr (_util::_CIterable<T>)
+            return ToString(value.cbegin(), value.cend());
+        else if constexpr (_util::_Iterable<T>)
+            return ToString(value.begin(), value.end());
+
+        // Fallback
+        else
+            #ifdef VTC_PRINT_USE_FALLBACK_TOSTRING
+                return "<?>";
+            #else
+                static_assert(false, "Cannot convert value to string");
+            #endif
     }
 
 }
