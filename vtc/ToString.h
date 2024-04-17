@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <sstream>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -27,6 +28,27 @@ namespace vtc {
             { value.cbegin() } -> std::input_iterator;
             { value.cend() } -> std::input_iterator;
         };
+
+        template <typename T>
+        concept _Tuplelike = requires(T value)
+        {
+            { std::get<0>(value) };
+        };
+
+        template <typename T>
+        std::string _ToStringVariadicUtil(std::stringstream& ss, T value);
+
+        template <typename T, typename ...U>
+        std::string _ToStringVariadicUtil(std::stringstream& ss, T value, U... values);
+
+        template <typename T, typename ...U>
+        std::string _ToStringVariadic(T value, U... values);
+
+        template <typename T>
+        std::string _ToStringVariadic(T value);
+
+        template <typename ...U>
+        std::string _ToStringTuple(std::tuple<U...> tuple);
 
     };
 
@@ -74,6 +96,10 @@ namespace vtc {
         else if constexpr (_util::_Iterable<T>)
             return ToString(value.begin(), value.end());
 
+        // Tuple-like
+        else if constexpr (_util::_Tuplelike<T>)
+            return _util::_ToStringTuple(value);
+
         // Fallback
         else
             #ifdef VTC_PRINT_USE_FALLBACK_TOSTRING
@@ -81,6 +107,52 @@ namespace vtc {
             #else
                 static_assert(false, "Cannot convert value to string");
             #endif
+    }
+
+    namespace _util 
+    {
+        template <typename T>
+        std::string _ToStringVariadicUtil(std::stringstream& ss, T value)
+        {
+            ss << ToString(value);
+            return ss.str();
+        }
+
+        template <typename T, typename ...U>
+        std::string _ToStringVariadicUtil(std::stringstream& ss, T value, U... values)
+        {
+            ss << ToString(value);
+            ss << ", ";
+            return _ToStringVariadicUtil(ss, values...);
+        }
+
+        template <typename T, typename ...U>
+        std::string _ToStringVariadic(T value, U... values)
+        {
+            std::stringstream ss;
+            ss << ToString(value);
+            ss << ", ";
+            return _ToStringVariadicUtil(ss, values...);
+        }
+
+        template <typename T>
+        std::string _ToStringVariadic(T value)
+        {
+            std::stringstream ss;
+            ss << ToString(value);
+            return ss.str();
+        }
+
+        template <typename ...U>
+        std::string _ToStringTuple(std::tuple<U...> tuple)
+        {
+            std::stringstream ss;
+
+            ss << "(";
+            ss << std::apply(_ToStringVariadic<U...>, tuple);
+            ss << ")";
+            return ss.str();
+        }
     }
 
 }
