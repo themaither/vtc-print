@@ -37,6 +37,12 @@ namespace vtc {
         };
 
         template <typename T>
+        concept _Dereferencable = requires(T value)
+        {
+            { *value };
+        };
+
+        template <typename T>
         std::string _ToStringVariadicUtil(std::stringstream& ss, T value);
 
         template <typename T, typename ...U>
@@ -53,6 +59,18 @@ namespace vtc {
 
         template <typename ...U>
         std::string _ToStringTuple(std::pair<U...> pair);
+
+        template <typename T>
+        std::string _ToStringPointer(T value)
+        {
+            std::stringstream ss;
+            if (value) {
+                ss << "(" << value << ":" << *value << ")";
+                return ss.str();
+            }
+            ss << "(" << value << ": " << "null" << ")";
+            return ss.str();
+        }
 
     };
 
@@ -103,6 +121,14 @@ namespace vtc {
         // Tuple-like (i hate this)
         else if constexpr (_util::_Tuplelike<T>)
             return _util::_ToStringTuple(value);
+
+        // Pointers
+        else if constexpr (std::is_pointer_v<T>)
+            return _util::_ToStringPointer(value);
+
+        // Dereferencable types
+        else if constexpr (_util::_Dereferencable<T>)
+            return ToString(*value);
 
         // Fallback
         else
