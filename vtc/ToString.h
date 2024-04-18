@@ -72,6 +72,17 @@ namespace vtc {
             return ss.str();
         }
 
+        template <typename T>
+        std::string _ToStringNumber(T value)
+        {
+            if constexpr (std::integral<T>) {
+                return std::to_string(value);
+            }
+            std::stringstream ss;
+            ss << value;
+            return ss.str();
+        }
+
     };
 
     template <typename Iter>
@@ -110,7 +121,7 @@ namespace vtc {
 
         // Numbers
         else if constexpr (_util::_StdConvertibleToString<T>) 
-            return std::to_string(value);
+            return _util::_ToStringNumber(value);
 
         // Containers
         else if constexpr (_util::_CIterable<T>)
