@@ -3,6 +3,7 @@
 #include <sstream>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace vtc {
@@ -50,6 +51,9 @@ namespace vtc {
         template <typename ...U>
         std::string _ToStringTuple(std::tuple<U...> tuple);
 
+        template <typename ...U>
+        std::string _ToStringTuple(std::pair<U...> pair);
+
     };
 
     template <typename Iter>
@@ -96,7 +100,7 @@ namespace vtc {
         else if constexpr (_util::_Iterable<T>)
             return ToString(value.begin(), value.end());
 
-        // Tuple-like
+        // Tuple-like (i hate this)
         else if constexpr (_util::_Tuplelike<T>)
             return _util::_ToStringTuple(value);
 
@@ -150,6 +154,17 @@ namespace vtc {
 
             ss << "(";
             ss << std::apply(_ToStringVariadic<U...>, tuple);
+            ss << ")";
+            return ss.str();
+        }
+
+        template <typename ...U>
+        std::string _ToStringTuple(std::pair<U...> pair)
+        {
+            std::stringstream ss;
+
+            ss << "(";
+            ss << std::apply(_ToStringVariadic<U...>, pair);
             ss << ")";
             return ss.str();
         }
